@@ -1,0 +1,7 @@
+<suite name="Homework test suite" verbose="1" parallel="methods" thread-count="2">
+    <test name="Parallel Homework Tests">
+        <classes>
+            <class name="examples.Homework.Homework"></class>
+        </classes>
+    </test>
+</suite>
