@@ -14,14 +14,28 @@ import org.testng.asserts.SoftAssert;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+// Open URL
+// Open Login page
+// Verify that the correct url is displayed
+// Click Register link
+// Verify that the correct url is displayed
+// Verify that the header of register form is displayed
+// Enter valid username
+// Enter valid email
+// Enter valid password
+// Enter different password in verify password field
+// Verify that the X icon is displayed next to verify password field
+// Click Sign up button
+// Verify that the registration is failed
+
 public class NonMatchingPass {
     private static WebDriver driver;
     final static String homeUrl = "http://training.skillo-bg.com/posts/all";
-    final static String loginUrl ="http://training.skillo-bg.com/users/login";
+    final static String loginUrl = "http://training.skillo-bg.com/users/login";
     final static String regUrl = "http://training.skillo-bg.com/users/register";
 
     @BeforeClass
-    public void setUp(){
+    public void setUp() {
         System.out.println("~~~ Setting up WebDriver ~~~");
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
@@ -30,15 +44,17 @@ public class NonMatchingPass {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
         driver.get(homeUrl);
     }
+
     @Test
-    public void openLoginForm(){
+    public void openLoginForm() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         System.out.println("1. Open login form");
         clickElement(By.id("nav-link-login"), 3);
         wait.until(ExpectedConditions.urlToBe(loginUrl));
     }
-    @Test(priority = 1)
-    public void openRegisterForm(){
+
+    @Test(dependsOnMethods = "openLoginForm")
+    public void openRegisterForm() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         System.out.println("2. Open registration form");
         clickElement(By.cssSelector("a[href='/users/register']"), 3);
@@ -48,8 +64,8 @@ public class NonMatchingPass {
     }
 
     @Parameters({"username", "email", "password"})
-    @Test(priority = 2)
-    public void enterValidCredentials(String username, String email, String password){
+    @Test(dependsOnMethods = "openRegisterForm")
+    public void enterCredentials(String username, String email, String password) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
         System.out.println("3. Enter valid credentials");
@@ -71,19 +87,22 @@ public class NonMatchingPass {
 
         System.out.println("5. Try to Sign in");
         clickElement(By.id("sign-in-button"), 2);
-//        wait.until(ExpectedConditions.urlToBe(regUrl));
-//        System.out.println(driver.getCurrentUrl());
         SoftAssert soft = new SoftAssert();
-        soft.assertTrue(driver.getCurrentUrl().equals(regUrl), "Url is not displayed!");
+
+        WebElement toastMsg = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("toast-message")));
+        String toastMessage = toastMsg.getText().trim();
+        soft.assertEquals(toastMessage, "Registration failed!", "Registration is:");
         soft.assertAll();
     }
-    private WebElement clickElement(By locator, int time){
+
+    private WebElement clickElement(By locator, int time) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(time));
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
         element.click();
         return element;
     }
-    private void enterText(WebElement element, String text){
+
+    private void enterText(WebElement element, String text) {
         element.sendKeys(text);
 
         Boolean validInput = element.getAttribute("class").contains("is-valid");
@@ -91,8 +110,7 @@ public class NonMatchingPass {
     }
 
     @AfterClass
-    public void closeDriver(){
+    public void closeDriver() {
         driver.close();
     }
-
 }
